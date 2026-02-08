@@ -1,56 +1,80 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import * as SecureStore from "expo-secure-store";
+import React, { useState } from "react";
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  ScrollView, KeyboardAvoidingView, Platform, Alert,
+} from "react-native";
+import { useRouter } from "expo-router";
 
-export default function UserSignup() {
+export default function UserRegistration() {
   const router = useRouter();
-  const role = 'User';
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [form, setForm] = useState({
+    name: "", email: "", phone: "", age: "", height: "", weight: "",
+    password: "", confirmPassword: ""
+  });
 
-  const handleSignup = () => {
-    if (!name || !email || !password) {
-      Alert.alert('Error', 'Please fill all fields');
-      return;
-    }
-    Alert.alert('Success', `Signed up as ${role}`);
-    router.push('/login');
+  const validateForm = () => {
+    if (!form.name.trim()) return "Enter name";
+    if (!form.email.trim()) return "Enter email";
+    if (!form.phone.trim()) return "Enter phone number";
+    if (!form.age.trim()) return "Enter age";
+    if (!form.height.trim()) return "Enter height";
+    if (!form.weight.trim()) return "Enter weight";
+    if (!form.password) return "Enter password";
+    if (form.password.length < 4) return "Password must be 4+ characters";
+    if (form.password !== form.confirmPassword) return "Passwords do not match";
+    return null;
+  };
+
+  const handleRegister = async () => {
+    const error = validateForm();
+    if (error) return Alert.alert("Error", error);
+
+    // ✅ CLEAN DATA
+    await SecureStore.setItemAsync("username", form.name.trim());
+    await SecureStore.setItemAsync("userEmail", form.email.trim().toLowerCase());
+    await SecureStore.setItemAsync("userPassword", form.password);
+
+    Alert.alert("Success", "Registered! Please login.");
+    router.replace("/login");
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#fff' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Sign Up</Text>
-        <Text style={styles.roleText}>Signing up as: <Text style={styles.roleName}>{role}</Text></Text>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Text style={styles.header}>Create Account</Text>
 
-        <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+        <Input label="Full Name" value={form.name} onChangeText={(v) => setForm({ ...form, name: v })} />
+        <Input label="Email" keyboardType="email-address" value={form.email} onChangeText={(v) => setForm({ ...form, email: v })} />
+        <Input label="Phone Number" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => setForm({ ...form, phone: v })} />
+        <Input label="Age" keyboardType="numeric" value={form.age} onChangeText={(v) => setForm({ ...form, age: v })} />
+        <Input label="Height (cm)" keyboardType="numeric" value={form.height} onChangeText={(v) => setForm({ ...form, height: v })} />
+        <Input label="Weight (kg)" keyboardType="numeric" value={form.weight} onChangeText={(v) => setForm({ ...form, weight: v })} />
 
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
+        <Input label="Password" secureTextEntry value={form.password} onChangeText={(v) => setForm({ ...form, password: v })} />
+        <Input label="Confirm Password" secureTextEntry value={form.confirmPassword} onChangeText={(v) => setForm({ ...form, confirmPassword: v })} />
 
-        <TouchableOpacity onPress={() => router.push('/login')}>
-          <Text style={styles.loginText}>Already have an account? Login</Text>
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+const Input = ({ label, ...props }) => (
+  <View style={{ marginBottom: 14 }}>
+    <Text style={styles.label}>{label}</Text>
+    <TextInput {...props} style={styles.input} />
+  </View>
+);
+
 const styles = StyleSheet.create({
-  container: { padding: 20, justifyContent: 'center', flexGrow: 1 },
-  title: { fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 12, fontFamily: 'System' },
-  roleText: { fontSize: 16, textAlign: 'center', marginBottom: 24, fontFamily: 'System', color: '#555' },
-  roleName: { fontWeight: '600', color: '#22b573' },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 12, padding: 16, marginBottom: 16, fontFamily: 'System' },
-  button: { backgroundColor: '#22b573', paddingVertical: 16, borderRadius: 12, marginBottom: 16 },
-  buttonText: { color: '#fff', fontSize: 16, textAlign: 'center', fontWeight: '600', fontFamily: 'System' },
-  loginText: { color: '#22b573', fontSize: 14, textAlign: 'center', fontFamily: 'System' },
+  container: { padding: 20, backgroundColor: "#fff" },
+  header: { fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 20 },
+  label: { fontSize: 14, marginBottom: 6, color: "#444" },
+  input: { borderWidth: 1, borderColor: "#ddd", borderRadius: 10, padding: 14 },
+  button: { backgroundColor: "#22b573", padding: 16, borderRadius: 12, marginTop: 20 },
+  buttonText: { color: "#fff", textAlign: "center", fontWeight: "600", fontSize: 16 },
 });

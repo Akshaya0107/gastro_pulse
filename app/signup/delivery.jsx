@@ -1,41 +1,25 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import React from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
 export default function DeliverySignup() {
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Delivery Partner Signup</Text>
+      <Text style={styles.title}>Delivery Partner Signup</Text>
 
       <TextInput style={styles.input} placeholder="Full Name" />
       <TextInput style={styles.input} placeholder="Phone Number" />
-      <TextInput style={styles.input} placeholder="Vehicle Type" />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry />
 
-      <TouchableOpacity style={styles.btn}>
-        <Text style={styles.btnText}>Register as Partner</Text>
+      <TouchableOpacity style={styles.button} onPress={() => Alert.alert("Success", "Delivery partner registered")}>
+        <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
-  header: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-  },
-  btn: {
-    backgroundColor: '#4CAF50',
-    padding: 14,
-    borderRadius: 25,
-    marginTop: 10,
-  },
-  btnText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
+  container: { flex: 1, padding: 24, justifyContent: "center", backgroundColor: "#fff" },
+  title: { fontSize: 22, fontWeight: "700", marginBottom: 20 },
+  input: { borderWidth: 1, borderColor: "#ddd", padding: 14, borderRadius: 10, marginBottom: 15 },
+  button: { backgroundColor: "#4CAF50", padding: 14, borderRadius: 25 },
+  buttonText: { color: "#fff", textAlign: "center" },
 });
