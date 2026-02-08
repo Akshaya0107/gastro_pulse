@@ -1,223 +1,84 @@
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from "expo-secure-store";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function Login() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("User");
 
-  const handleLogin = () => {
-  // after successful login
-  router.replace('/(user)/home');
-};
+  const handleLogin = async () => {
+    const savedEmail = await SecureStore.getItemAsync("userEmail");
+    const savedPass = await SecureStore.getItemAsync("userPassword");
 
+    if (!savedEmail) return Alert.alert("No Account", "Please register first.");
+
+    if (email.trim().toLowerCase() === savedEmail && password === savedPass) {
+
+      // 🔥 ROLE BASED NAVIGATION
+      if (role === "User") {
+        router.replace("/tabs/home");
+      } 
+      else if (role === "Home-cook") {
+        router.replace("/cook");
+      } 
+      else if (role === "Delivery-partner") {
+        router.replace("/partner");
+      }
+
+    } else {
+      Alert.alert("Login Failed", "Wrong email or password");
+    }
+  };
 
   return (
-
-    
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>User Login</Text>
-        <View style={{ width: 24 }} />
+      <Text style={styles.title}>Login</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        onChangeText={setEmail}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        onChangeText={setPassword}
+      />
+
+      <Text style={styles.roleLabel}>Select Role</Text>
+      <View style={styles.roleRow}>
+        {["User", "Home-cook", "Delivery-partner"].map((r) => (
+          <TouchableOpacity
+            key={r}
+            style={[styles.roleBtn, role === r && styles.roleActive]}
+            onPress={() => setRole(r)}
+          >
+            <Text style={[styles.roleText, role === r && { color: "#fff" }]}>{r}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      {/* Input Fields */}
-      <View style={styles.form}>
-        {/* Email / Phone */}
-<Text style={styles.label}>Email or Phone Number</Text>
-<TextInput
-  style={styles.input}
-  placeholder="Enter your email or phone"
-/>
-
-{/* Password */}
-<Text style={styles.label}>Password</Text>
-<View style={styles.passwordBox}>
-  <TextInput
-    style={styles.passwordInput}
-    placeholder="Enter your password"
-    secureTextEntry
-  />
-  <Ionicons name="eye-outline" size={20} color="#999" />
-</View>
-
-       
-        {/* Remember + Forgot */}
-        <View style={styles.row}>
-          <View style={styles.rememberBox}>
-            <View style={styles.checkbox} />
-            <Text style={styles.rememberText}>Remember me</Text>
-          </View>
-
-          <Text style={styles.forgot}>Forgot Password?</Text>
-        </View>
-
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-  <Text style={styles.loginText}>Login</Text>
-</TouchableOpacity>
-
-
-
-        {/* OR Divider */}
-        <View style={styles.orRow}>
-          <View style={styles.line} />
-          <Text style={styles.orText}>OR</Text>
-          <View style={styles.line} />
-        </View>
-
-        {/* Social Buttons */}
-        <TouchableOpacity style={styles.socialBtn}>
-          <Ionicons name="mail-outline" size={18} />
-          <Text style={styles.socialText}>Continue with Email</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialBtn}>
-          <Ionicons name="logo-google" size={18} />
-          <Text style={styles.socialText}>Continue with Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialBtn}>
-          <Ionicons name="logo-apple" size={18} />
-          <Text style={styles.socialText}>Continue with Apple</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialBtn}>
-          <Ionicons name="logo-facebook" size={18} />
-          <Text style={styles.socialText}>Continue with Facebook</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-  },
-
-  /* Header */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 50,
-    marginBottom: 30,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
-  /* Form */
-  form: {
-    flex: 1,
-  },
-
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 15,
-  },
-
-  passwordBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    marginBottom: 15,
-  },
-  passwordInput: {
-    flex: 1,
-    paddingVertical: 14,
-  },
-
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
-
-  rememberBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 16,
-    height: 16,
-    borderWidth: 1,
-    borderColor: '#999',
-    marginRight: 8,
-    borderRadius: 4,
-  },
-  rememberText: {
-    fontSize: 13,
-    color: '#555',
-  },
-  forgot: {
-    fontSize: 13,
-    color: '#4CAF50',
-  },
-
-  loginBtn: {
-    backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 25,
-    marginBottom: 25,
-  },
-  loginText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-
-  /* OR */
-  orRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#ddd',
-  },
-  orText: {
-    marginHorizontal: 10,
-    color: '#777',
-    fontSize: 13,
-  },
-
-  /* Social */
-  socialBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 14,
-    borderRadius: 25,
-    marginBottom: 12,
-  },
-  socialText: {
-    marginLeft: 10,
-    fontSize: 14,
-    fontWeight: '500',
-  },
+  container: { flex: 1, justifyContent: "center", padding: 20, backgroundColor: "#fff" },
+  title: { fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 20 },
+  input: { borderWidth: 1, borderColor: "#ddd", padding: 14, borderRadius: 10, marginBottom: 15 },
+  roleLabel: { marginTop: 10, marginBottom: 6, fontWeight: "600" },
+  roleRow: { flexDirection: "row", gap: 10, marginBottom: 15, flexWrap: "wrap" },
+  roleBtn: { borderWidth: 1, borderColor: "#22b573", paddingVertical: 10, paddingHorizontal: 14, borderRadius: 20 },
+  roleActive: { backgroundColor: "#22b573" },
+  roleText: { color: "#22b573", fontWeight: "600" },
+  button: { backgroundColor: "#22b573", padding: 15, borderRadius: 12 },
+  buttonText: { color: "#fff", textAlign: "center", fontWeight: "600" }
 });
